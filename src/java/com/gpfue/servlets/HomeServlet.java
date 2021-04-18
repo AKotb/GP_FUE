@@ -5,8 +5,11 @@
  */
 package com.gpfue.servlets;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,69 +21,50 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class HomeServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet HomeServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet HomeServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+    private String PYTHON_INTERPRETER_PATH = "C:/Users/akotb/AppData/Local/Programs/Python/Python39/python.exe";
+    private String PYTHON_SCRIPT_PATH = "C:/Users/akotb/OneDrive/Documents/NetBeansProjects/GP_FUE/web/resources/codeTest.py";
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        String scene = request.getParameter("scene");
+        String year = request.getParameter("year");
+        String algorithm = request.getParameter("algorithm");
+        String name = request.getParameter("name");
+        if (scene.isEmpty() || year.isEmpty() || algorithm.isEmpty() || name.isEmpty()) {
+            RequestDispatcher rd = request.getRequestDispatcher("home.jsp");
+            out.println("<font color=red>Please fill all the fields</font>");
+            rd.include(request, response);
+        } else {
+            // Creating command that takes the string variables. 
+            String command = PYTHON_INTERPRETER_PATH + " " + PYTHON_SCRIPT_PATH + " -s " + scene + " -y \""
+                    + year + "\" -g " + algorithm + " -n " + name;
+
+            System.out.println("====================================================");
+            System.out.println("Python Command: " + command);
+            System.out.println("====================================================");
+
+            // It takes the command and goes to the python code(EX: run_svm)
+            ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", command);
+            builder.redirectErrorStream(true);
+            Process p = builder.start();
+            
+            // Reads the python output code.
+            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+            while (true) {
+                line = r.readLine();
+                if (line == null) {
+                    break;
+                }
+                System.out.println(line);
+                request.setAttribute("pythonresult", line);
+            }
+            System.out.println("After Creating Python Command");
+            
+            // Viewing the output result after finishing the python code.
+            RequestDispatcher rd = request.getRequestDispatcher("success.jsp");
+            rd.forward(request, response);
         }
     }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }
