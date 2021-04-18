@@ -60,7 +60,7 @@ public class HomeServlet extends HttpServlet {
                 System.out.println(line);
                 request.setAttribute("pythonresult", line);
             }
-            System.out.println("After Creating Python Command");
+            System.out.println("After execution of the python script");
             
             // Viewing the output result after finishing the python code.
             RequestDispatcher rd = request.getRequestDispatcher("success.jsp");

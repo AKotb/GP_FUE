@@ -1,0 +1,9 @@
+pip install wheel
+pip install pipwin
+pipwin install numpy
+pipwin install gdal
+pipwin install rasterio
+pipwin install docopt
+pipwin install scikit-learn
+pipwin install scikit-image
+pipwin install astropy
